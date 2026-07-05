@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ChattyCHOP Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#080808;color:#e8e8e8;font-family:-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;line-height:1.5;}
+.lock-screen{position:fixed;inset:0;background:#080808;z-index:9999;display:flex;align-items:center;justify-content:center;}
+.lock-box{background:#111;border:1px solid #222;border-radius:16px;padding:36px;width:340px;max-width:92vw;text-align:center;}
+.lock-logo{font-size:36px;margin-bottom:12px;}
+.lock-title{font-size:16px;font-weight:700;color:#ff6b2b;margin-bottom:4px;}
+.lock-sub{font-size:12px;color:#333;margin-bottom:24px;}
+.lock-input{width:100%;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:12px;color:#e8e8e8;font-size:16px;outline:none;text-align:center;letter-spacing:4px;box-sizing:border-box;margin-bottom:10px;}
+.lock-input:focus{border-color:#ff6b2b;}
+.lock-btn{width:100%;padding:12px;background:#ff6b2b;border:none;border-radius:9px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+.lock-btn:hover{background:#ff8c42;}
+.lock-err{font-size:12px;color:#f87171;min-height:16px;margin-bottom:4px;}
+.header{padding:18px 28px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;background:#0d0d0d;}
+.header h1{font-size:16px;font-weight:700;color:#ff6b2b;}
+.header .sub{font-size:11px;color:#333;margin-top:2px;}
+.tabs{display:flex;gap:0;border-bottom:1px solid #1a1a1a;}
+.tab{padding:14px 22px;font-size:12px;font-weight:600;cursor:pointer;color:#444;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.5px;}
+.tab.active{color:#ff6b2b;border-bottom-color:#ff6b2b;}
+.content{padding:24px;max-width:1200px;margin:0 auto;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;}
+.card{background:#141414;border:1px solid #1e1e1e;border-radius:12px;padding:20px;}
+.card-title{font-size:11px;font-weight:700;color:#ff6b2b;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+label{display:block;font-size:11px;color:#555;letter-spacing:1px;margin-bottom:5px;margin-top:14px;}
+input,select,textarea{width:100%;background:#0f0f0f;border:1px solid #222;border-radius:7px;padding:9px 12px;color:#e8e8e8;font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;}
+input:focus,select:focus,textarea:focus{border-color:#ff6b2b;}
+.btn{padding:10px 18px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.3px;}
+.btn.primary{background:#ff6b2b;color:#fff;}
+.btn.primary:hover{background:#ff8c42;}
+.btn.green{background:#16a34a;color:#fff;}
+.btn.green:hover{background:#15803d;}
+.btn.sec{background:#1e1e1e;border:1px solid #2a2a2a;color:#888;}
+.btn.red{background:#7f1d1d;border:1px solid #991b1b;color:#fca5a5;}
+.btn.full{width:100%;margin-top:8px;}
+.msg{font-size:12px;text-align:center;margin-top:8px;min-height:16px;color:#22c55e;}
+.msg.err{color:#f87171;}
+.user-list{display:flex;flex-direction:column;gap:8px;max-height:500px;overflow-y:auto;padding-right:4px;}
+.user-card{background:#111;border:1px solid #1e1e1e;border-radius:9px;padding:14px;cursor:pointer;transition:all .15s;}
+.user-card:hover{border-color:#ff6b2b44;}
+.user-card.selected{border-color:#ff6b2b;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;}
+.badge.pro{background:#1a2f4a;color:#3b82f6;}
+.badge.premium{background:#2a1a4a;color:#8b5cf6;}
+.badge.friend{background:#1a2a1a;color:#22c55e;}
+.badge.free{background:#1e1e1e;color:#555;}
+.badge.banned{background:#7f1d1d;color:#fca5a5;}
+.badge.vouch{background:#1a2a10;color:#86efac;}
+.profile-detail{background:#0f0f0f;border:1px solid #1e1e1e;border-radius:10px;padding:16px;}
+.screenshot{width:100%;max-height:180px;object-fit:cover;border-radius:6px;margin-top:8px;}
+.code-display{background:#0a0a0a;border:1px solid #22c55e44;border-radius:6px;padding:12px;font-family:monospace;font-size:14px;color:#22c55e;letter-spacing:3px;text-align:center;cursor:pointer;margin-top:8px;word-break:break-all;}
+hr{border:none;border-top:1px solid #1a1a1a;margin:12px 0;}
+.stat-row{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid #1a1a1a;}
+.stat-row:last-child{border:none;}
+.stat-label{color:#555;}
+.stat-val{color:#e8e8e8;font-weight:600;}
+.empty{color:#2a2a2a;font-size:12px;text-align:center;padding:24px;}.user-list::-webkit-scrollbar{width:4px;}.user-list::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">🔒</div>
+    <div class="lock-title">ChattyCHOP Admin</div>
+    <div class="lock-sub">Enter password to continue</div>
+    <input type="password" id="lock-input" class="lock-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock();" autofocus/>
+    <div class="lock-err" id="lock-err"></div>
+    <button class="lock-btn" onclick="unlock()">Unlock</button>
+  </div>
+</div>
+<div id="admin-body" style="display:none">
+<div class="header">
+  <div>
+    <h1>🔒 ChattyCHOP Inbox — Admin</h1>
+    <div class="sub">LOCAL ONLY · NEVER UPLOAD · Keep on your laptop</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn green" onclick="pushAll()">⚡ Push to JSONBin</button>
+    <button class="btn sec" onclick="pullFromBin()">🔄 Pull from JSONBin</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('users',this)">👥 Users</div>
+  <div class="tab" onclick="switchTab('config',this)">⚙️ Config</div>
+  <div class="tab" onclick="switchTab('codes',this)">🎫 Codes</div>
+  <div class="tab" onclick="switchTab('island',this)">🏝️ Island</div>
+  <div class="tab" onclick="switchTab('announce',this)">📢 Announcements</div>
+  <div class="tab" onclick="switchTab('donors',this)">🏆 Donors</div>
+</div>
+
+<div id="msg-global" class="msg" style="padding:8px;text-align:center;"></div>
+
+<!-- USERS TAB -->
+<div id="tab-users" class="content">
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:20px">
+    <!-- User list -->
+    <div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="new-gmail" placeholder="Add Gmail: user@gmail.com" style="flex:1"/>
+        <button class="btn primary" onclick="addUser()">+</button>
+      </div>
+      <div class="user-list" id="user-list"></div>
+    </div>
+
+    <!-- User profile detail -->
+    <div id="user-detail" style="display:none">
+      <div class="profile-detail">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:40px;height:40px;borderRadius:50%;background:#1e1e1e;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0" id="detail-avatar">👤</div>
+          <div>
+            <div style="font-size:15px;font-weight:700" id="detail-name">-</div>
+            <div style="font-size:11px;color:#555" id="detail-email">-</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <span class="badge" id="detail-badge">free</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div>
+            <label>Display Name</label>
+            <input id="detail-name-input" placeholder="Name"/>
+          </div>
+          <div>
+            <label>Category</label>
+            <select id="detail-category">
+              <option value="paid">💳 Paid</option>
+              <option value="vouch">🤝 Vouch (Free Friend)</option>
+              <option value="banned">🚫 Banned</option>
+            </select>
+          </div>
+          <div>
+            <label>Custom msg limit/day (0 = use app default)</label>
+            <input type="number" id="detail-limit" placeholder="0" min="0"/>
+          </div>
+          <div>
+            <label>Code tier</label>
+            <select id="detail-tier">
+              <option value="PRO">Pro</option>
+              <option value="PREMIUM">Premium</option>
+              <option value="FRIEND">Friend (Free)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label>Notes (payment info, etc.)</label>
+          <textarea id="detail-notes" rows="2" placeholder="e.g. Paid Rs100 on 16 June via PhonePe, screenshot saved"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label>Payment Screenshot (required for paid codes)</label>
+          <input type="file" id="detail-screenshot" accept="image/*" onchange="previewScreenshot(this)"/>
+          <img id="screenshot-preview" class="screenshot" style="display:none"/>
+          <div id="screenshot-status" style="font-size:11px;color:#555;margin-top:4px"></div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label>Send personal message to this user</label>
+          <textarea id="detail-message" rows="2" placeholder="e.g. Your code expires soon! Renew to keep Pro access."></textarea>
+          <div style="font-size:11px;color:#555;margin-top:3px">Shows as popup to this user only. Disappears when they click ×</div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn primary" onclick="saveUserProfile()">💾 Save Profile</button>
+          <button class="btn green" onclick="generateCodeForUser()">⚡ Generate Code</button>
+          <button class="btn sec" onclick="copyLastCode()">📋 Copy Last Code</button>
+          <button class="btn red" onclick="banUser()">🚫 Ban User</button>
+          <button class="btn sec" onclick="unbanUser()" style="border-color:#22c55e;color:#22c55e">✅ Unban</button>
+          <button class="btn green" onclick="renewCode()" title="Extend code by 30 more days">🔄 Renew 30d</button>
+          <button class="btn red" onclick="deleteUser()" style="border-color:#ff0000;opacity:0.7" title="Permanently delete this user profile">🗑 Delete Account</button>
+        </div>
+
+        <div id="last-code-box" style="display:none">
+          <label>Generated Code (click to copy)</label>
+          <div class="code-display" id="last-code" onclick="copyLastCode()"></div>
+        </div>
+
+        <div id="detail-msg" class="msg"></div>
+
+        <hr/>
+        <div class="card-title" style="margin-top:8px">History</div>
+        <div id="detail-history" style="font-size:11px;color:#555;line-height:2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG TAB -->
+<div id="tab-config" class="content" style="display:none">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">🔑 JSONBin Config</div>
+      <label>Bin ID</label>
+      <input id="bin-id" value="6a30dea2da38895dfec7bede"/>
+      <label>Secret Key</label>
+      <input type="password" id="jbin-key" value="$2a$10$6qmVIqD9vfUdur5dAZqc4eHFHI.6V5jIIVM6wiS1QyiFXgorvBs1G"/>
+      <button class="btn sec full" onclick="saveCreds()">💾 Save Credentials</button>
+      <div class="msg" id="cred-msg"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🤖 AI Config</div>
+      <label>Groq API Key</label>
+      <input type="password" id="groq-key" placeholder="gsk_..."/>
+      <button class="btn sec" style="margin-top:6px;width:auto" onclick="toggleVis('groq-key')">👁</button>
+      <label>Premium API Key (optional)</label>
+      <input type="password" id="premium-key" placeholder="sk-..."/>
+      <label>Free/Pro Model</label>
+      <select id="free-model">
+        <option value="llama-3.3-70b-versatile">Llama 3.3 70b (Groq)</option>
+        <option value="llama-3.1-8b-instant">Llama 3.1 8b Fast</option>
+        <option value="mixtral-8x7b-32768">Mixtral 8x7b</option>
+      </select>
+      <label>Premium Model</label>
+      <select id="prem-model">
+        <option value="llama-3.3-70b-versatile">Llama 3.3 70b (free)</option>
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="gpt-4o-mini">GPT-4o Mini</option>
+        <option value="claude-sonnet-4-6">Claude Sonnet</option>
+      </select>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Message Limits & Pricing</div>
+      <label>Free users (msgs/day)</label>
+      <input type="number" id="free-limit" placeholder="e.g. 15" min="1"/>
+      <label>Pro msg limit/day (99999 = unlimited)</label>
+      <input type="number" id="pro-limit" placeholder="e.g. 100" min="1"/>
+      <label>Pro price (₹/month, shows in app)</label>
+      <input type="number" id="pro-price" value="100" min="0"/>
+      <label>Premium msg limit/day (99999 = unlimited)</label>
+      <input type="number" id="prem-limit" placeholder="e.g. 50" min="1"/>
+      <label>Premium price (₹/month, shows in app)</label>
+      <input type="number" id="prem-price" value="299" min="0"/>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Stats</div>
+      <div id="stats-content">
+        <div class="stat-row"><span class="stat-label">Total users</span><span class="stat-val" id="stat-users">-</span></div>
+        <div class="stat-row"><span class="stat-label">Active codes</span><span class="stat-val" id="stat-codes">-</span></div>
+        <div class="stat-row"><span class="stat-label">Total donors</span><span class="stat-val" id="stat-donors">-</span></div>
+        <div class="stat-row"><span class="stat-label">Groq key</span><span class="stat-val" id="stat-groq">-</span></div>
+        <div class="stat-row"><span class="stat-label">Bin key</span><span class="stat-val" id="stat-jbin">-</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CODES TAB -->
+<div id="tab-codes" class="content" style="display:none">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">🎫 Active Codes</div>
+      <div id="code-list" class="user-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">ℹ️ Quick Generate</div>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">To generate a code, go to the Users tab, select a user, upload their payment screenshot, then click "Generate Code".</p>
+      <p style="font-size:12px;color:#3b82f6">💡 For vouch/friends: set their category to "Vouch" — no screenshot needed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ISLAND TAB -->
+<div id="tab-island" class="content" style="display:none">
+  <div class="grid" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">🔑 Island AI Config</div>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">Separate from Inbox's key above — Island pulls this one on its own.</p>
+      <label>Island API Key</label>
+      <input type="password" id="island-api-key" placeholder="gsk_ / AIza / sk-or- / sk-ant / etc."/>
+      <button class="btn sec" style="margin-top:6px;width:auto" onclick="toggleVis('island-api-key')">👁</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Island Limits & Pricing</div>
+      <label>Free users (msgs/day)</label>
+      <input type="number" id="island-free-limit" placeholder="e.g. 15" min="1"/>
+      <label>Pro msg limit/day (99999 = unlimited)</label>
+      <input type="number" id="island-pro-limit" placeholder="e.g. 100" min="1"/>
+      <label>Pro price (₹/month, shows in app)</label>
+      <input type="number" id="island-pro-price" value="100" min="0"/>
+      <label>Premium msg limit/day (99999 = unlimited)</label>
+      <input type="number" id="island-prem-limit" placeholder="e.g. 50" min="1"/>
+      <label>Premium price (₹/month, shows in app)</label>
+      <input type="number" id="island-prem-price" value="299" min="0"/>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;margin-bottom:20px">
+    <!-- Island device list -->
+    <div>
+      <div class="card-title" style="margin-bottom:10px">🏝️ Island Users (by Device ID)</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="new-device-id" placeholder="Add Device ID"/>
+        <button class="btn primary" onclick="addIslandUser()">+</button>
+      </div>
+      <div class="user-list" id="island-user-list"></div>
+    </div>
+
+    <!-- Island device profile detail -->
+    <div id="island-user-detail" style="display:none">
+      <div class="profile-detail">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:40px;height:40px;border-radius:50%;background:#1e1e1e;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏝️</div>
+          <div>
+            <div style="font-size:15px;font-weight:700" id="island-detail-name">-</div>
+            <div style="font-size:11px;color:#555" id="island-detail-device">-</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <span class="badge" id="island-detail-badge">free</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div>
+            <label>Nickname (for your reference)</label>
+            <input id="island-detail-name-input" placeholder="e.g. My PC"/>
+          </div>
+          <div>
+            <label>Category</label>
+            <select id="island-detail-category">
+              <option value="paid">💳 Paid</option>
+              <option value="vouch">🤝 Vouch (Free Friend)</option>
+              <option value="banned">🚫 Banned</option>
+            </select>
+          </div>
+          <div>
+            <label>Custom msg limit/day (0 = use app default)</label>
+            <input type="number" id="island-detail-limit" placeholder="0" min="0"/>
+          </div>
+          <div>
+            <label>Code tier</label>
+            <select id="island-detail-tier">
+              <option value="PRO">Pro</option>
+              <option value="PREMIUM">Premium</option>
+              <option value="FRIEND">Friend (Free)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label>Notes (payment info, etc.)</label>
+          <textarea id="island-detail-notes" rows="2" placeholder="e.g. Paid Rs100 on 16 June via PhonePe"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label>Send personal message to this device</label>
+          <textarea id="island-detail-message" rows="2" placeholder="e.g. Your code expires soon! Renew to keep Pro access."></textarea>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn primary" onclick="saveIslandUserProfile()">💾 Save Profile</button>
+          <button class="btn green" onclick="generateCodeForIslandUser()">⚡ Generate Code</button>
+          <button class="btn sec" onclick="copyLastIslandCode()">📋 Copy Last Code</button>
+          <button class="btn red" onclick="banIslandUser()">🚫 Ban Device</button>
+          <button class="btn sec" onclick="unbanIslandUser()" style="border-color:#22c55e;color:#22c55e">✅ Unban</button>
+          <button class="btn green" onclick="renewIslandCode()" title="Extend code by 30 more days">🔄 Renew 30d</button>
+          <button class="btn red" onclick="deleteIslandUser()" style="border-color:#ff0000;opacity:0.7">🗑 Delete Device</button>
+        </div>
+
+        <div id="island-last-code-box" style="display:none">
+          <label>Generated Code (click to copy)</label>
+          <div class="code-display" id="island-last-code" onclick="copyLastIslandCode()"></div>
+        </div>
+
+        <div id="island-detail-msg" class="msg"></div>
+
+        <hr/>
+        <div class="card-title" style="margin-top:8px">History</div>
+        <div id="island-detail-history" style="font-size:11px;color:#555;line-height:2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎫 Island Active Codes</div>
+    <div id="island-code-list" class="user-list"></div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENTS TAB -->
+<div id="tab-announce" class="content" style="display:none">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">📢 ChattyCHOP Inbox</div>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">Shows to ALL users. Leave empty to hide.</p>
+      <label>Message</label>
+      <textarea id="inbox-ann-text" rows="3" placeholder="e.g. New features live! 🔥"></textarea>
+      <label>Type</label>
+      <select id="inbox-ann-type">
+        <option value="info">Info (blue)</option>
+        <option value="success">Success (green)</option>
+        <option value="warning">Warning (yellow)</option>
+      </select>
+    </div>
+    <div class="card">
+      <div class="card-title">📢 JarvisCAM</div>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">Shows in JarvisCAM only. Leave empty to hide.</p>
+      <label>Message</label>
+      <textarea id="jarvis-ann-text" rows="3" placeholder="e.g. JarvisCAM v13 is live!"></textarea>
+      <label>Type</label>
+      <select id="jarvis-ann-type">
+        <option value="info">Info (blue)</option>
+        <option value="success">Success (green)</option>
+        <option value="warning">Warning (yellow)</option>
+      </select>
+    </div>
+    <div class="card">
+      <div class="card-title">📢 Island</div>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">Shows in the Island overlay only. Leave empty to hide.</p>
+      <label>Message</label>
+      <textarea id="island-ann-text" rows="3" placeholder="e.g. Island v2 is live! 🏝️"></textarea>
+      <label>Type</label>
+      <select id="island-ann-type">
+        <option value="info">Info (blue)</option>
+        <option value="success">Success (green)</option>
+        <option value="warning">Warning (yellow)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- DONORS TAB -->
+<div id="tab-donors" class="content" style="display:none">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">+ Add Donor</div>
+      <label>Name</label><input id="d-name" placeholder="Rahul"/>
+      <label>City</label><input id="d-city" placeholder="Mumbai"/>
+      <label>Flag</label><input id="d-flag" placeholder="🇮🇳"/>
+      <label>Amount (Rs)</label><input type="number" id="d-amt" placeholder="100"/>
+      <button class="btn primary full" onclick="addDonor()">Add to Hall of Fame</button>
+      <div class="msg" id="donor-msg"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 Hall of Fame</div>
+      <div id="donor-list" class="user-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const JBIN = "https://api.jsonbin.io/v3/b/6a30dea2da38895dfec7bede";
+const JKEY = "$2a$10$6qmVIqD9vfUdur5dAZqc4eHFHI.6V5jIIVM6wiS1QyiFXgorvBs1G";
+
+const LS = "ci_admin_v4";
+
+// State
+var STATE = {
+  userProfiles: {},
+  proCodes: [],
+  donors: [],
+  selectedEmail: null,
+  screenshotData: null,
+  islandUsers: {},
+  islandCodes: [],
+  selectedDeviceId: null,
+};
+
+function gs(){try{return JSON.parse(localStorage.getItem(LS)||'{}');}catch(e){return{};}}
+function ss(d){localStorage.setItem(LS,JSON.stringify({...gs(),...d}));}
+function getBinId(){return document.getElementById('bin-id').value.trim()||localStorage.getItem('ci_bin_id')||BIN_ID_DEFAULT;}
+function getJKey(){return document.getElementById('jbin-key').value.trim()||localStorage.getItem('ci_jbin_key')||JBIN_KEY_DEFAULT;}
+function getBinUrl(){return 'https://api.jsonbin.io/v3/b/'+(document.getElementById('bin-id').value.trim()||BIN_ID_DEFAULT);}
+function showMsg(id,txt,err){var el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className='msg'+(err?' err':'');if(txt&&id!=='msg-global')setTimeout(function(){el.textContent='';},4000);}
+function toggleVis(id){var el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
+
+// Tab switching
+function switchTab(name, el) {
+  document.querySelectorAll('.content').forEach(function(c){c.style.display='none';});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-'+name).style.display='block';
+  el.classList.add('active');
+}
+
+function saveCreds(){
+  var binId=document.getElementById('bin-id').value.trim();
+  var jkey=document.getElementById('jbin-key').value.trim();
+  if(binId)localStorage.setItem('ci_bin_id',binId);
+  if(jkey)localStorage.setItem('ci_jbin_key',jkey);
+  showMsg('cred-msg','✅ Saved!');
+  updateStats();
+}
+
+// ── PULL FROM JSONBIN ─────────────────────────────────────────
+async function pullFromBin(){
+  showMsg('msg-global','Pulling from JSONBin...');
+  try{
+    var url=JBIN+'/latest?meta=false';
+    var r=await fetch(url);
+    var d=await r.json();
+
+    STATE.proCodes=d.proCodes||[];
+    STATE.donors=d.donors||[];
+    STATE.userProfiles=d.userProfiles||{};
+    STATE.islandUsers=d.islandUsers||{};
+    STATE.islandCodes=d.islandCodes||[];
+
+    // Load into form fields
+    if(d.groqKey)document.getElementById('groq-key').value=d.groqKey;
+    if(d.premiumKey)document.getElementById('premium-key').value=d.premiumKey;
+    if(d.freeLimit)document.getElementById('free-limit').value=d.freeLimit;
+    if(d.proLimit)document.getElementById('pro-limit').value=d.proLimit;
+    if(d.proPrice)document.getElementById('pro-price').value=d.proPrice;
+    if(d.premiumLimit)document.getElementById('prem-limit').value=d.premiumLimit;
+    if(d.premiumPrice)document.getElementById('prem-price').value=d.premiumPrice;
+    if(d.freeModel)document.getElementById('free-model').value=d.freeModel;
+    if(d.premiumModel)document.getElementById('prem-model').value=d.premiumModel;
+    if(d.islandApiKey)document.getElementById('island-api-key').value=d.islandApiKey;
+    if(d.islandFreeLimit)document.getElementById('island-free-limit').value=d.islandFreeLimit;
+    if(d.islandProLimit)document.getElementById('island-pro-limit').value=d.islandProLimit;
+    if(d.islandProPrice)document.getElementById('island-pro-price').value=d.islandProPrice;
+    if(d.islandPremiumLimit)document.getElementById('island-prem-limit').value=d.islandPremiumLimit;
+    if(d.islandPremiumPrice)document.getElementById('island-prem-price').value=d.islandPremiumPrice;
+    if(d.announcement){
+      var at=document.getElementById('inbox-ann-text');
+      var atype=document.getElementById('inbox-ann-type');
+      if(at)at.value=d.announcement.text||'';
+      if(atype)atype.value=d.announcement.type||'info';
+    }
+    if(d.jarvisAnnouncement){
+      var jt=document.getElementById('jarvis-ann-text');
+      var jtype=document.getElementById('jarvis-ann-type');
+      if(jt)jt.value=d.jarvisAnnouncement.text||'';
+      if(jtype)jtype.value=d.jarvisAnnouncement.type||'info';
+    }
+    if(d.islandAnnouncement){
+      var it=document.getElementById('island-ann-text');
+      var itype=document.getElementById('island-ann-type');
+      if(it)it.value=d.islandAnnouncement.text||'';
+      if(itype)itype.value=d.islandAnnouncement.type||'info';
+    }
+
+    renderUserList();
+    renderCodeList();
+    renderDonorList();
+    renderIslandUserList();
+    renderIslandCodeList();
+    updateStats();
+    showMsg('msg-global','✅ Pulled from JSONBin!');
+    showMsg('msg-global','✅ Pulled from JSONBin!');
+  }catch(e){showMsg('msg-global','Error: '+e.message,true);}
+}
+
+// ── PUSH TO JSONBIN ───────────────────────────────────────────
+async function pushAll(){
+  var groqKey=document.getElementById('groq-key').value.trim();
+  if(!groqKey){showMsg('msg-global','Enter Groq key first!',true);return;}
+  var btn=document.querySelector('button[onclick="pushAll()"]');
+  if(btn){btn.textContent='⏳ Pushing...';btn.disabled=true;}
+  showMsg('msg-global','Pushing to JSONBin...');
+  try{
+    // Get current bin to preserve anything we're not overwriting
+    var curr={};
+    try{curr=await fetch(JBIN+'/latest?meta=false').then(function(r){return r.json();});}catch(e){}
+
+    var now=Date.now();
+    var activeCodes=STATE.proCodes.filter(function(c){return c.expiry>now;});
+    var activeIslandCodes=STATE.islandCodes.filter(function(c){return c.expiry>now;});
+
+    var payload={
+      ...curr,
+      groqKey:groqKey,
+      premiumKey:document.getElementById('premium-key').value.trim(),
+      freeLimit:parseInt(document.getElementById('free-limit').value)||curr.freeLimit||15,
+      proLimit:parseInt(document.getElementById('pro-limit').value)||curr.proLimit||99999,
+      proPrice:parseInt(document.getElementById('pro-price').value)||100,
+      premiumLimit:parseInt(document.getElementById('prem-limit').value)||curr.premiumLimit||99999,
+      premiumPrice:parseInt(document.getElementById('prem-price').value)||299,
+      freeModel:document.getElementById('free-model').value,
+      proModel:document.getElementById('free-model').value,
+      premiumModel:document.getElementById('prem-model').value,
+      proCodes:activeCodes,
+      announcement:{text:document.getElementById('inbox-ann-text').value.trim(),type:document.getElementById('inbox-ann-type').value},
+      jarvisAnnouncement:{text:document.getElementById('jarvis-ann-text').value.trim(),type:document.getElementById('jarvis-ann-type').value},
+      islandAnnouncement:{text:document.getElementById('island-ann-text').value.trim(),type:document.getElementById('island-ann-type').value},
+      donors:STATE.donors,
+      userProfiles:STATE.userProfiles,
+      islandApiKey:document.getElementById('island-api-key').value.trim(),
+      islandFreeLimit:parseInt(document.getElementById('island-free-limit').value)||curr.islandFreeLimit||15,
+      islandProLimit:parseInt(document.getElementById('island-pro-limit').value)||curr.islandProLimit||99999,
+      islandProPrice:parseInt(document.getElementById('island-pro-price').value)||100,
+      islandPremiumLimit:parseInt(document.getElementById('island-prem-limit').value)||curr.islandPremiumLimit||99999,
+      islandPremiumPrice:parseInt(document.getElementById('island-prem-price').value)||299,
+      islandUsers:STATE.islandUsers,
+      islandCodes:activeIslandCodes,
+    };
+
+    var r=await fetch(JBIN,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JKEY},
+      body:JSON.stringify(payload)
+    });
+    var result=await r.json();
+    if(btn){btn.textContent='⚡ Push to JSONBin';btn.disabled=false;}
+    if(result.record){
+      showMsg('msg-global','✅ Pushed to JSONBin! 🔥');
+    } else {
+      showMsg('msg-global','Error: '+JSON.stringify(result),true);
+    }
+  }catch(e){
+    if(btn){btn.textContent='⚡ Push to JSONBin';btn.disabled=false;}
+    showMsg('msg-global','Error: '+e.message,true);
+  }
+}
+
+// ── USER PROFILES ─────────────────────────────────────────────
+function addUser(){
+  var email=document.getElementById('new-gmail').value.trim().toLowerCase();
+  if(!email||!email.includes('@')){showMsg('msg-global','Enter valid Gmail!',true);return;}
+  if(STATE.userProfiles[email]){showMsg('msg-global','User already exists!',true);return;}
+  STATE.userProfiles[email]={
+    name:email.split('@')[0],
+    category:'paid',
+    customLimit:0,
+    notes:'',
+    screenshot:null,
+    message:'',
+    codes:[],
+    addedAt:Date.now()
+  };
+  document.getElementById('new-gmail').value='';
+  renderUserList();
+  selectUser(email);
+  showMsg('msg-global','User added!');
+}
+
+function renderUserList(){
+  var el=document.getElementById('user-list');
+  var emails=Object.keys(STATE.userProfiles);
+  if(!emails.length){el.innerHTML='<div class="empty">No users yet. Add a Gmail above.</div>';return;}
+  el.innerHTML=emails.map(function(email){
+    var p=STATE.userProfiles[email];
+    var tier=getUserTier(email);
+    return '<div class="user-card'+(STATE.selectedEmail===email?' selected':'')+'" onclick="selectUser(\''+email+'\')">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between">'
+      +'<div><div style="font-size:13px;font-weight:600">'+p.name+'</div><div style="font-size:11px;color:#444;margin-top:1px">'+email+'</div></div>'
+      +'<span class="badge '+p.category+'">'+p.category+'</span>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function getUserTier(email){
+  var now=Date.now();
+  var p=STATE.userProfiles[email];
+  if(p&&p.category==='banned')return'banned';
+  var activeCodes=STATE.proCodes.filter(function(c){return c.gmail===email&&c.expiry>now;});
+  if(activeCodes.length){return activeCodes[activeCodes.length-1].tier.toLowerCase();}
+  return'free';
+}
+
+function selectUser(email){
+  STATE.selectedEmail=email;
+  var p=STATE.userProfiles[email];
+  if(!p)return;
+
+  document.getElementById('user-detail').style.display='block';
+  document.getElementById('detail-name').textContent=p.name||email.split('@')[0];
+  document.getElementById('detail-email').textContent=email;
+  document.getElementById('detail-name-input').value=p.name||'';
+  document.getElementById('detail-category').value=p.category||'paid';
+  document.getElementById('detail-limit').value=p.customLimit||0;
+  document.getElementById('detail-tier').value=p.codeTier||'PRO';
+  document.getElementById('detail-notes').value=p.notes||'';
+  document.getElementById('detail-message').value=p.message||'';
+
+  var tier=getUserTier(email);
+  var badge=document.getElementById('detail-badge');
+  badge.className='badge '+(p.category==='banned'?'banned':tier);
+  badge.textContent=p.category==='banned'?'BANNED':tier.toUpperCase();
+
+  // Screenshot
+  if(p.screenshot){
+    document.getElementById('screenshot-preview').src=p.screenshot;
+    document.getElementById('screenshot-preview').style.display='block';
+    document.getElementById('screenshot-status').textContent='✅ Payment screenshot saved';
+    STATE.screenshotData=p.screenshot;
+  } else {
+    document.getElementById('screenshot-preview').style.display='none';
+    document.getElementById('screenshot-status').textContent='No screenshot uploaded';
+    STATE.screenshotData=null;
+  }
+
+  // Last code
+  var userCodes=(p.codes||[]).filter(function(c){return Date.now()<c.expiry;});
+  if(userCodes.length){
+    document.getElementById('last-code-box').style.display='block';
+    document.getElementById('last-code').textContent=userCodes[userCodes.length-1].code;
+  } else {
+    document.getElementById('last-code-box').style.display='none';
+  }
+
+  // History
+  var history='';
+  if(p.addedAt)history+='Added: '+new Date(p.addedAt).toLocaleDateString()+'<br/>';
+  if(p.codes&&p.codes.length)history+=p.codes.map(function(code){return code.tier+' code: '+code.code+' (expires '+new Date(code.expiry).toLocaleDateString()+')';}).join('<br/>');
+  document.getElementById('detail-history').innerHTML=history||'No history yet';
+
+  // Re-render list to show selection
+  renderUserList();
+}
+
+function previewScreenshot(input){
+  var file=input.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var data=e.target.result;
+    document.getElementById('screenshot-preview').src=data;
+    document.getElementById('screenshot-preview').style.display='block';
+    document.getElementById('screenshot-status').textContent='✅ Screenshot loaded — save profile to keep it';
+    STATE.screenshotData=data;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveUserProfile(){
+  var email=STATE.selectedEmail;
+  if(!email)return;
+  var p=STATE.userProfiles[email]||{};
+  p.name=document.getElementById('detail-name-input').value.trim()||email.split('@')[0];
+  p.category=document.getElementById('detail-category').value;
+  p.customLimit=parseInt(document.getElementById('detail-limit').value)||0;
+  p.codeTier=document.getElementById('detail-tier').value;
+  p.notes=document.getElementById('detail-notes').value;
+  p.message=document.getElementById('detail-message').value;
+  if(STATE.screenshotData)p.screenshot=STATE.screenshotData;
+  STATE.userProfiles[email]=p;
+
+  // Update display
+  document.getElementById('detail-name').textContent=p.name;
+  var badge=document.getElementById('detail-badge');
+  badge.className='badge '+(p.category==='banned'?'banned':getUserTier(email));
+  badge.textContent=p.category==='banned'?'BANNED':p.category.toUpperCase();
+
+  renderUserList();
+  showMsg('detail-msg','✅ Profile saved! Push to JSONBin to apply changes.');
+}
+
+function banUser(){
+  var email=STATE.selectedEmail;
+  if(!email)return;
+  if(!confirm('Ban '+email+'? They will see a suspended screen.'))return;
+  STATE.userProfiles[email].category='banned';
+  document.getElementById('detail-category').value='banned';
+  renderUserList();
+  showMsg('detail-msg','🚫 Banned. Push to JSONBin to apply.');
+}
+
+function deleteUser(){
+  var email=STATE.selectedEmail;
+  if(!email)return;
+  if(!confirm('Permanently delete '+email+'?\nThis removes their profile and all their codes.'))return;
+  delete STATE.userProfiles[email];
+  STATE.proCodes=STATE.proCodes.filter(function(c){return c.gmail!==email;});
+  STATE.selectedEmail=null;
+  document.getElementById('user-detail').style.display='none';
+  renderUserList();
+  renderCodeList();
+  showMsg('msg-global','🗑 Deleted. Push to JSONBin to apply.');
+}
+
+function generateCodeForUser(){
+  var email=STATE.selectedEmail;
+  if(!email)return;
+  var p=STATE.userProfiles[email];
+  var category=p.category||'paid';
+  var tier=document.getElementById('detail-tier').value;
+
+  // Screenshot required for paid, not for vouch/friend
+  if(category==='paid'&&!STATE.screenshotData&&!p.screenshot){
+    showMsg('detail-msg','❌ Upload payment screenshot first!',true);
+    return;
+  }
+
+  var days=30;
+  var expiry=Date.now()+days*86400000;
+  var raw=btoa(email+':'+tier+':'+expiry).replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,14);
+  var code=tier+'-'+raw;
+
+  // Add to proCodes
+  var codeObj={code:code,gmail:email,tier:tier,expiry:expiry,created:Date.now(),category:category};
+  STATE.proCodes.push(codeObj);
+
+  // Add to user's code history
+  if(!p.codes)p.codes=[];
+  p.codes.push(codeObj);
+  STATE.userProfiles[email]=p;
+
+  // Show code
+  document.getElementById('last-code-box').style.display='block';
+  document.getElementById('last-code').textContent=code;
+  renderCodeList();
+  showMsg('detail-msg','✅ Code generated! Copy and send to user. Push to JSONBin to activate!');
+}
+
+function unbanUser(){
+  var email=STATE.selectedEmail;
+  if(!email)return;
+  STATE.userProfiles[email].category='paid';
+  document.getElementById('detail-category').value='paid';
+  renderUserList();
+  showMsg('detail-msg','✅ Unbanned! Push to JSONBin to apply.');
+}
+
+function renewCode(){
+  var email=STATE.selectedEmail;
+  if(!email)return;
+  var p=STATE.userProfiles[email];
+  var tier=document.getElementById('detail-tier').value;
+  // Find existing active code and extend it
+  var now=Date.now();
+  var extended=false;
+  for(var i=0;i<STATE.proCodes.length;i++){
+    if(STATE.proCodes[i].gmail===email&&STATE.proCodes[i].expiry>now){
+      STATE.proCodes[i].expiry=STATE.proCodes[i].expiry+30*86400000;
+      if(p.codes){
+        for(var j=0;j<p.codes.length;j++){
+          if(p.codes[j].code===STATE.proCodes[i].code){p.codes[j].expiry=STATE.proCodes[i].expiry;}
+        }
+      }
+      extended=true;
+      break;
+    }
+  }
+  if(extended){
+    showMsg('detail-msg','✅ Code renewed for 30 more days! Push to JSONBin to apply.');
+    renderCodeList();
+  } else {
+    // No active code — generate new one
+    generateCodeForUser();
+  }
+}
+
+function copyLastCode(){
+  var code=document.getElementById('last-code').textContent;
+  if(!code)return;
+  navigator.clipboard.writeText(code).then(function(){showMsg('detail-msg','📋 Copied!');});
+}
+
+function renderCodeList(){
+  var el=document.getElementById('code-list');
+  var now=Date.now();
+  var active=STATE.proCodes.filter(function(c){return c.expiry>now;});
+  if(!active.length){el.innerHTML='<div class="empty">No active codes</div>';return;}
+  el.innerHTML=[...active].reverse().map(function(c,i){
+    var daysLeft=Math.ceil((c.expiry-now)/86400000);
+    return '<div class="user-card" style="cursor:default">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'
+      +'<span style="font-family:monospace;font-size:11px;color:#22c55e">'+c.code+'</span>'
+      +'<span class="badge '+c.tier.toLowerCase()+'">'+c.tier+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#444;margin-top:4px">'+c.gmail+' · '+daysLeft+' days left</div>'
+      +'<button onclick="deleteCode('+STATE.proCodes.indexOf(c)+')" style="background:transparent;border:none;color:#f87171;cursor:pointer;font-size:11px;margin-top:4px">Remove</button>'
+      +'</div>';
+  }).join('');
+  document.getElementById('stat-codes').textContent=active.length;
+}
+
+function deleteCode(i){
+  STATE.proCodes.splice(i,1);
+  renderCodeList();
+}
+
+// ── DONORS ────────────────────────────────────────────────────
+async function addDonor(){
+  var name=document.getElementById('d-name').value.trim();
+  var city=document.getElementById('d-city').value.trim();
+  var flag=document.getElementById('d-flag').value.trim()||'🌍';
+  var amt=parseInt(document.getElementById('d-amt').value)||0;
+  if(!name||!city||!amt){showMsg('donor-msg','Fill all fields!',true);return;}
+  STATE.donors.push({name:name,city:city,flag:flag,amount:amt});
+  document.getElementById('d-name').value='';
+  document.getElementById('d-city').value='';
+  document.getElementById('d-flag').value='';
+  document.getElementById('d-amt').value='';
+  renderDonorList();
+  showMsg('donor-msg','✅ Added! Push to JSONBin to sync.');
+}
+
+function renderDonorList(){
+  var el=document.getElementById('donor-list');
+  if(!STATE.donors.length){el.innerHTML='<div class="empty">No donors yet</div>';return;}
+  el.innerHTML=[...STATE.donors].sort(function(a,b){return b.amount-a.amount;}).map(function(d,i){
+    return '<div class="user-card" style="cursor:default;display:flex;align-items:center;justify-content:space-between">'
+      +'<span>'+d.flag+' <b>'+d.name+'</b> · '+d.city+' · Rs'+d.amount+'</span>'
+      +'<button onclick="deleteDonor('+i+')" style="background:transparent;border:none;color:#f87171;cursor:pointer">🗑️</button>'
+      +'</div>';
+  }).join('');
+  document.getElementById('stat-donors').textContent=STATE.donors.length;
+}
+
+function deleteDonor(i){
+  STATE.donors.splice(i,1);
+  renderDonorList();
+}
+
+// ── ISLAND DEVICE USERS ─────────────────────────────────────────
+function addIslandUser(){
+  var deviceId=document.getElementById('new-device-id').value.trim();
+  if(!deviceId){showMsg('msg-global','Enter a Device ID!',true);return;}
+  if(STATE.islandUsers[deviceId]){showMsg('msg-global','Device already exists!',true);return;}
+  STATE.islandUsers[deviceId]={
+    name:'Device '+deviceId.slice(0,6),
+    category:'paid',
+    customLimit:0,
+    notes:'',
+    message:'',
+    codes:[],
+    addedAt:Date.now()
+  };
+  document.getElementById('new-device-id').value='';
+  renderIslandUserList();
+  selectIslandUser(deviceId);
+  showMsg('msg-global','Device added!');
+}
+
+function renderIslandUserList(){
+  var el=document.getElementById('island-user-list');
+  if(!el)return;
+  var ids=Object.keys(STATE.islandUsers);
+  if(!ids.length){el.innerHTML='<div class="empty">No devices yet. Add a Device ID above.</div>';return;}
+  el.innerHTML=ids.map(function(id){
+    var p=STATE.islandUsers[id];
+    return '<div class="user-card'+(STATE.selectedDeviceId===id?' selected':'')+'" onclick="selectIslandUser(\''+id+'\')">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between">'
+      +'<div><div style="font-size:13px;font-weight:600">'+p.name+'</div><div style="font-size:11px;color:#444;margin-top:1px">'+id+'</div></div>'
+      +'<span class="badge '+p.category+'">'+p.category+'</span>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function getIslandUserTier(deviceId){
+  var now=Date.now();
+  var p=STATE.islandUsers[deviceId];
+  if(p&&p.category==='banned')return'banned';
+  var activeCodes=STATE.islandCodes.filter(function(c){return c.deviceId===deviceId&&c.expiry>now;});
+  if(activeCodes.length){return activeCodes[activeCodes.length-1].tier.toLowerCase();}
+  return'free';
+}
+
+function selectIslandUser(deviceId){
+  STATE.selectedDeviceId=deviceId;
+  var p=STATE.islandUsers[deviceId];
+  if(!p)return;
+
+  document.getElementById('island-user-detail').style.display='block';
+  document.getElementById('island-detail-name').textContent=p.name||deviceId;
+  document.getElementById('island-detail-device').textContent=deviceId;
+  document.getElementById('island-detail-name-input').value=p.name||'';
+  document.getElementById('island-detail-category').value=p.category||'paid';
+  document.getElementById('island-detail-limit').value=p.customLimit||0;
+  document.getElementById('island-detail-tier').value=p.codeTier||'PRO';
+  document.getElementById('island-detail-notes').value=p.notes||'';
+  document.getElementById('island-detail-message').value=p.message||'';
+
+  var tier=getIslandUserTier(deviceId);
+  var badge=document.getElementById('island-detail-badge');
+  badge.className='badge '+(p.category==='banned'?'banned':tier);
+  badge.textContent=p.category==='banned'?'BANNED':tier.toUpperCase();
+
+  var userCodes=(p.codes||[]).filter(function(c){return Date.now()<c.expiry;});
+  if(userCodes.length){
+    document.getElementById('island-last-code-box').style.display='block';
+    document.getElementById('island-last-code').textContent=userCodes[userCodes.length-1].code;
+  } else {
+    document.getElementById('island-last-code-box').style.display='none';
+  }
+
+  var history='';
+  if(p.addedAt)history+='Added: '+new Date(p.addedAt).toLocaleDateString()+'<br/>';
+  if(p.codes&&p.codes.length)history+=p.codes.map(function(code){return code.tier+' code: '+code.code+' (expires '+new Date(code.expiry).toLocaleDateString()+')';}).join('<br/>');
+  document.getElementById('island-detail-history').innerHTML=history||'No history yet';
+
+  renderIslandUserList();
+}
+
+function saveIslandUserProfile(){
+  var deviceId=STATE.selectedDeviceId;
+  if(!deviceId)return;
+  var p=STATE.islandUsers[deviceId]||{};
+  p.name=document.getElementById('island-detail-name-input').value.trim()||deviceId;
+  p.category=document.getElementById('island-detail-category').value;
+  p.customLimit=parseInt(document.getElementById('island-detail-limit').value)||0;
+  p.codeTier=document.getElementById('island-detail-tier').value;
+  p.notes=document.getElementById('island-detail-notes').value;
+  p.message=document.getElementById('island-detail-message').value;
+  STATE.islandUsers[deviceId]=p;
+
+  document.getElementById('island-detail-name').textContent=p.name;
+  var badge=document.getElementById('island-detail-badge');
+  badge.className='badge '+(p.category==='banned'?'banned':getIslandUserTier(deviceId));
+  badge.textContent=p.category==='banned'?'BANNED':p.category.toUpperCase();
+
+  renderIslandUserList();
+  showMsg('island-detail-msg','✅ Profile saved! Push to JSONBin to apply changes.');
+}
+
+function banIslandUser(){
+  var deviceId=STATE.selectedDeviceId;
+  if(!deviceId)return;
+  if(!confirm('Ban device '+deviceId+'? Island will show a suspended state.'))return;
+  STATE.islandUsers[deviceId].category='banned';
+  document.getElementById('island-detail-category').value='banned';
+  renderIslandUserList();
+  showMsg('island-detail-msg','🚫 Banned. Push to JSONBin to apply.');
+}
+
+function unbanIslandUser(){
+  var deviceId=STATE.selectedDeviceId;
+  if(!deviceId)return;
+  STATE.islandUsers[deviceId].category='paid';
+  document.getElementById('island-detail-category').value='paid';
+  renderIslandUserList();
+  showMsg('island-detail-msg','✅ Unbanned! Push to JSONBin to apply.');
+}
+
+function deleteIslandUser(){
+  var deviceId=STATE.selectedDeviceId;
+  if(!deviceId)return;
+  if(!confirm('Permanently delete device '+deviceId+'?\nThis removes its profile and all its codes.'))return;
+  delete STATE.islandUsers[deviceId];
+  STATE.islandCodes=STATE.islandCodes.filter(function(c){return c.deviceId!==deviceId;});
+  STATE.selectedDeviceId=null;
+  document.getElementById('island-user-detail').style.display='none';
+  renderIslandUserList();
+  renderIslandCodeList();
+  showMsg('msg-global','🗑 Deleted. Push to JSONBin to apply.');
+}
+
+function generateCodeForIslandUser(){
+  var deviceId=STATE.selectedDeviceId;
+  if(!deviceId)return;
+  var p=STATE.islandUsers[deviceId];
+  var tier=document.getElementById('island-detail-tier').value;
+
+  var days=30;
+  var expiry=Date.now()+days*86400000;
+  var raw=btoa(deviceId+':'+tier+':'+expiry).replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,14);
+  var code='ISL-'+tier+'-'+raw;
+
+  var codeObj={code:code,deviceId:deviceId,tier:tier,expiry:expiry,created:Date.now(),category:p.category||'paid'};
+  STATE.islandCodes.push(codeObj);
+
+  if(!p.codes)p.codes=[];
+  p.codes.push(codeObj);
+  STATE.islandUsers[deviceId]=p;
+
+  document.getElementById('island-last-code-box').style.display='block';
+  document.getElementById('island-last-code').textContent=code;
+  renderIslandCodeList();
+  showMsg('island-detail-msg','✅ Code generated! Copy and send to user. Push to JSONBin to activate!');
+}
+
+function renewIslandCode(){
+  var deviceId=STATE.selectedDeviceId;
+  if(!deviceId)return;
+  var p=STATE.islandUsers[deviceId];
+  var now=Date.now();
+  var extended=false;
+  for(var i=0;i<STATE.islandCodes.length;i++){
+    if(STATE.islandCodes[i].deviceId===deviceId&&STATE.islandCodes[i].expiry>now){
+      STATE.islandCodes[i].expiry=STATE.islandCodes[i].expiry+30*86400000;
+      if(p.codes){
+        for(var j=0;j<p.codes.length;j++){
+          if(p.codes[j].code===STATE.islandCodes[i].code){p.codes[j].expiry=STATE.islandCodes[i].expiry;}
+        }
+      }
+      extended=true;
+      break;
+    }
+  }
+  if(extended){
+    showMsg('island-detail-msg','✅ Code renewed for 30 more days! Push to JSONBin to apply.');
+    renderIslandCodeList();
+  } else {
+    generateCodeForIslandUser();
+  }
+}
+
+function copyLastIslandCode(){
+  var code=document.getElementById('island-last-code').textContent;
+  if(!code)return;
+  navigator.clipboard.writeText(code).then(function(){showMsg('island-detail-msg','📋 Copied!');});
+}
+
+function renderIslandCodeList(){
+  var el=document.getElementById('island-code-list');
+  if(!el)return;
+  var now=Date.now();
+  var active=STATE.islandCodes.filter(function(c){return c.expiry>now;});
+  if(!active.length){el.innerHTML='<div class="empty">No active codes</div>';return;}
+  el.innerHTML=[...active].reverse().map(function(c){
+    var daysLeft=Math.ceil((c.expiry-now)/86400000);
+    return '<div class="user-card" style="cursor:default">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'
+      +'<span style="font-family:monospace;font-size:11px;color:#22c55e">'+c.code+'</span>'
+      +'<span class="badge '+c.tier.toLowerCase()+'">'+c.tier+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#444;margin-top:4px">'+c.deviceId+' · '+daysLeft+' days left</div>'
+      +'<button onclick="deleteIslandCode('+STATE.islandCodes.indexOf(c)+')" style="background:transparent;border:none;color:#f87171;cursor:pointer;font-size:11px;margin-top:4px">Remove</button>'
+      +'</div>';
+  }).join('');
+}
+
+function deleteIslandCode(i){
+  STATE.islandCodes.splice(i,1);
+  renderIslandCodeList();
+}
+
+function updateStats(){
+  document.getElementById('stat-users').textContent=Object.keys(STATE.userProfiles).length;
+  document.getElementById('stat-codes').textContent=STATE.proCodes.filter(function(c){return c.expiry>Date.now();}).length;
+  document.getElementById('stat-donors').textContent=STATE.donors.length;
+  var groq=document.getElementById('groq-key').value.trim();
+  document.getElementById('stat-groq').textContent=groq?'✅ Set':'❌ Not set';
+  var jkey=document.getElementById('jbin-key').value.trim()||localStorage.getItem('ci_jbin_key');
+  document.getElementById('stat-jbin').textContent=jkey?'✅ Set':'❌ Not set';
+}
+
+// Auto-update stats on input
+document.addEventListener('input',function(){updateStats();});
+
+// Load saved credentials
+function init(){
+  var savedBinId=localStorage.getItem('ci_bin_id');
+  var savedJKey=localStorage.getItem('ci_jbin_key');
+  if(savedBinId)document.getElementById('bin-id').value=savedBinId;
+  if(savedJKey)document.getElementById('jbin-key').value=savedJKey;
+  updateStats();
+  pullFromBin();
+}
+
+init();
+
+// ── PASSWORD GATE ─────────────────────────────────────────────
+const ADMIN_PASS = '2005'; // change this to your password
+
+function unlock(){
+  var input = document.getElementById('lock-input').value;
+  if(input === ADMIN_PASS){
+    sessionStorage.setItem('ci_admin_unlocked','1');
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('admin-body').style.display='block';
+  } else {
+    var err = document.getElementById('lock-err');
+    err.textContent = 'Wrong password';
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+    setTimeout(function(){err.textContent='';},2000);
+  }
+}
+
+// Auto-unlock if already authenticated this session
+(function(){
+  if(sessionStorage.getItem('ci_admin_unlocked')==='1'){
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('admin-body').style.display='block';
+  } else {
+    setTimeout(function(){document.getElementById('lock-input').focus();},100);
+  }
+})();
+</script>
+</div></body>
+</html>
