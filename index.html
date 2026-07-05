@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chattychop Island</title>
+<meta name="description" content="Chattychop Island is a Dynamic Island for Windows — a floating AI overlay that lives at the top of your screen. Built by G. Badrinath (Chattychop)."/>
+<meta property="og:title" content="Chattychop Island — a Dynamic Island for Windows"/>
+<meta property="og:description" content="Chat, tasks, tools, rules and more — floating at the top of your screen, always on top. Free to run."/>
+<meta property="og:type" content="website"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080808;
+  --surface:#111;
+  --surface2:#161616;
+  --border:#1e1e1e;
+  --text:#e8e8e8;
+  --text2:#8a8a8a;
+  --text3:#444;
+  --accent:#ff6b2b;
+  --accent2:#ff8c42;
+  --blue:#3b82f6;
+  --purple:#8b5cf6;
+  --green:#22c55e;
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+.tricolor{height:3px;background:linear-gradient(90deg,#ff9933 33%,#fff 33% 66%,#138808 66%);}
+a{color:inherit;}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px;}
+
+/* ── NAV ───────────────────────────────────────────── */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;max-width:880px;margin:0 auto;}
+.nav-brand{font-weight:900;font-size:14px;letter-spacing:1px;color:var(--text2);}
+.nav-brand b{color:var(--accent);}
+.nav-link{font-size:12px;color:var(--text2);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:20px;transition:.2s;}
+.nav-link:hover{border-color:var(--accent);color:var(--accent2);}
+
+/* ── HERO ──────────────────────────────────────────── */
+.hero{text-align:center;padding:60px 24px 40px;}
+.eyebrow{font-size:11px;letter-spacing:3px;color:var(--text3);text-transform:uppercase;margin-bottom:28px;}
+
+/* live mini reproduction of the actual Island pill */
+.island-demo{width:180px;height:46px;margin:0 auto 34px;background:rgba(2,2,3,0.95);border:1px solid rgba(255,255,255,.08);border-radius:10px;display:flex;align-items:center;gap:10px;padding:0 16px;box-shadow:0 16px 40px rgba(0,0,0,.6);}
+.demo-blob{width:11px;height:11px;flex-shrink:0;background:linear-gradient(135deg,#5b9dff,#a855f7);box-shadow:0 0 10px rgba(120,140,255,.7);animation:breathe 2.8s ease-in-out infinite,morph 5s ease-in-out infinite,hue 9s linear infinite;}
+.demo-text{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.3px;}
+@keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+@keyframes morph{0%,100%{border-radius:50%;}33%{border-radius:46% 54% 52% 48%/48% 52% 46% 54%;}66%{border-radius:54% 46% 48% 52%/52% 48% 54% 46%;}}
+@keyframes hue{0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(360deg);}}
+
+h1{font-size:clamp(34px,7vw,56px);font-weight:900;letter-spacing:-1px;margin-bottom:14px;}
+h1 span{color:var(--accent);}
+.sub{font-size:16px;color:var(--text2);max-width:480px;margin:0 auto 36px;}
+
+.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:.15s;}
+.btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,107,43,.35);}
+.btn.ghost{background:var(--surface);border:1px solid var(--border);color:var(--text);}
+.btn.ghost:hover{border-color:var(--text2);}
+
+#launch-fallback{display:none;font-size:12px;color:var(--text2);max-width:360px;margin:10px auto 0;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+#launch-fallback b{color:var(--accent2);}
+
+/* ── STEPS ─────────────────────────────────────────── */
+.section{padding:56px 24px;}
+.section-title{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;text-align:center;margin-bottom:8px;}
+.section-heading{font-size:26px;font-weight:900;text-align:center;margin-bottom:40px;}
+
+.steps{display:flex;flex-direction:column;gap:14px;}
+.step{display:flex;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;}
+.step-num{font-size:20px;font-weight:900;color:var(--accent);flex-shrink:0;width:28px;}
+.step-body b{display:block;font-size:15px;margin-bottom:4px;}
+.step-body span{font-size:13px;color:var(--text2);}
+.step-body code{background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:5px;font-size:12px;color:var(--accent2);}
+
+/* ── FEATURES ──────────────────────────────────────── */
+.chip-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+.feat-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:9px 16px;font-size:13px;color:var(--text2);}
+
+/* ── PLANS ─────────────────────────────────────────── */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;}
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;}
+.plan-card.pro{border-color:rgba(59,130,246,.4);}
+.plan-card.premium{border-color:rgba(139,92,246,.4);}
+.plan-tier{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+.plan-card.pro .plan-tier{color:var(--blue);}
+.plan-card.premium .plan-tier{color:var(--purple);}
+.plan-price{font-size:26px;font-weight:900;margin-bottom:4px;}
+.plan-price span{font-size:12px;color:var(--text2);font-weight:400;}
+.plan-desc{font-size:12px;color:var(--text2);margin-top:8px;}
+
+/* ── FOOTER ────────────────────────────────────────── */
+.footer{text-align:center;padding:48px 24px 60px;border-top:1px solid var(--border);margin-top:20px;}
+.footer-name{font-weight:700;letter-spacing:2px;margin-bottom:6px;}
+.footer-sub{font-size:11px;color:var(--text3);margin-bottom:16px;}
+.footer-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+.footer-links a{font-size:11px;text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:20px;color:var(--text2);}
+.footer-links a:hover{border-color:var(--accent);color:var(--accent2);}
+
+/* ── TRY IT OUT ────────────────────────────────────── */
+.demo-frame{max-width:340px;margin:0 auto;background:linear-gradient(180deg,#0d0d0d,#080808);border:1px solid var(--border);border-radius:20px;padding:28px 20px;box-shadow:0 30px 60px rgba(0,0,0,.5);}
+.demo-pill{background:rgba(2,2,3,0.97);border:1px solid rgba(255,255,255,.08);border-radius:14px;cursor:pointer;overflow:hidden;transition:all .4s cubic-bezier(.34,1.56,.64,1);margin:0 auto;}
+.demo-pill.collapsed{width:180px;height:46px;display:flex;align-items:center;gap:10px;padding:0 16px;}
+.demo-pill.open{width:100%;height:260px;padding:14px;display:flex;flex-direction:column;}
+.demo-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.demo-label{font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.4);}
+.demo-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.demo-tab{font-size:10px;padding:5px 9px;border-radius:7px;color:rgba(255,255,255,.4);cursor:pointer;}
+.demo-tab.active{background:rgba(255,107,43,.18);color:var(--accent2);}
+.demo-body{flex:1;font-size:12px;color:rgba(255,255,255,.7);line-height:1.7;}
+.demo-hint{text-align:center;font-size:11px;color:var(--text3);margin-top:16px;}
+
+/* ── SUPPORT ───────────────────────────────────────── */
+.support-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;}
+@media (max-width:640px){.support-grid{grid-template-columns:1fr;}}
+.hof-card{border:1.5px solid rgba(255,153,51,.35);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);}
+.hof-header{background:linear-gradient(90deg,#ff9933,#ffcc00,#ff9933);padding:12px 14px;text-align:center;}
+.hof-header b{color:#1a0010;font-size:13px;letter-spacing:1px;}
+.hof-list{padding:12px;min-height:60px;max-height:220px;overflow-y:auto;}
+.hof-row{display:flex;align-items:center;gap:8px;padding:7px;background:rgba(255,153,51,.05);border-radius:8px;margin-bottom:6px;font-size:12px;}
+.qr-card{background:#fff;border-radius:14px;padding:18px;text-align:center;color:#1a0030;}
+.qr-card img{border-radius:8px;margin-bottom:10px;}
+
+/* ── DON'TS ────────────────────────────────────────── */
+.donts{display:flex;flex-direction:column;gap:10px;}
+.dont-row{display:flex;gap:12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px 18px;}
+.dont-icon{font-size:16px;flex-shrink:0;}
+.dont-row b{display:block;font-size:13px;margin-bottom:2px;}
+.dont-row span{font-size:12px;color:var(--text2);}
+
+/* ── STARTUP TOGGLE PREVIEW ───────────────────────────── */
+.toggle-card{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;max-width:460px;margin:0 auto;}
+.toggle-card b{display:block;font-size:14px;margin-bottom:3px;}
+.toggle-card span{font-size:12px;color:var(--text2);}
+.toggle-switch{width:46px;height:26px;border-radius:20px;background:#2a2a2a;flex-shrink:0;position:relative;cursor:pointer;transition:background .25s;}
+.toggle-switch.on{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.toggle-thumb{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .25s;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+.toggle-switch.on .toggle-thumb{left:23px;}
+.toggle-hint{text-align:center;font-size:11px;color:var(--text3);margin-top:14px;}
+</style>
+</head>
+<body>
+
+<div class="tricolor"></div>
+<div class="nav wrap">
+  <div class="nav-brand">CHATTY<b>CHOP</b></div>
+  <a class="nav-link" href="https://github.com/chattychop" target="_blank">GitHub ↗</a>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Windows · Free · No install wizard needed</div>
+  <div class="island-demo"><div class="demo-blob"></div><span class="demo-text">All good</span></div>
+  <h1>Your own <span>Dynamic Island</span>.<br>On Windows. For real.</h1>
+  <p class="sub">Chattychop Island floats at the top of your screen — chat with your AI, run quick commands, track tasks, and more, without ever opening a window.</p>
+
+  <div class="cta-row">
+    <button class="btn primary" onclick="launchIsland()">⚡ Start Island</button>
+    <a class="btn ghost" href="#get-it">⬇ Get it (free)</a>
+  </div>
+  <div id="launch-fallback">
+    <b>Nothing happened?</b> That's normal the first time — Island isn't installed yet on this computer. Scroll down, it's 2 clicks and about a minute. After that, this button will just wake Island up.
+  </div>
+</div>
+
+<div class="section" id="try-it">
+  <div class="section-title">Try it</div>
+  <div class="section-heading">This is the actual UI — click it</div>
+  <div class="wrap">
+    <div class="demo-frame">
+      <div class="demo-pill collapsed" id="demo-pill" onclick="toggleDemo()">
+        <div class="demo-blob" style="width:11px;height:11px;"></div>
+        <span class="demo-text" id="demo-collapsed-text">All good</span>
+      </div>
+    </div>
+    <div class="demo-hint">Tap the pill to open it, tap a tab to switch — same panels as the real thing.</div>
+  </div>
+</div>
+  <div class="section-title">Setup</div>
+  <div class="section-heading">Get it running — 2 clicks</div>
+  <div class="wrap">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <b>Download &amp; unzip</b>
+          <span>Grab the folder and unzip it anywhere — Desktop is fine.</span><br><br>
+          <a class="btn ghost" href="https://github.com/chattychop/chattychop-island/archive/refs/heads/main.zip" style="font-size:12px;padding:8px 16px;">⬇ Download .zip</a>
+          <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.9;">
+            What's in it:<br>
+            ✓ <code>main.js</code> — Island itself<br>
+            ✓ <code>package.json</code> + <code>package-lock.json</code> — tells npm exactly which packages to grab<br>
+            ✓ <code>RUN_ISLAND.bat</code> — the one file you'll actually double-click
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <b>Double-click RUN_ISLAND.bat</b>
+          <span>That's the whole thing — it sets your computer up by itself the first time (takes about a minute), then Island opens. Every time after this, it just opens straight away.</span>
+        </div>
+      </div>
+    </div>
+    <details style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+      <summary style="cursor:pointer;font-size:12px;color:var(--text2);font-weight:700;letter-spacing:.5px;">What's actually happening, for the curious 🔧</summary>
+      <p style="font-size:12px;color:var(--text2);margin-top:12px;line-height:1.8;">
+        Island is built on <b style="color:var(--text)">Node.js</b> — if you don't have it, <code>RUN_ISLAND.bat</code> installs it automatically in the background (no separate download needed on most Windows machines). It then runs <code>npm install</code> once to grab Island's pieces, and <code>npm start</code> to open it. You'll never need to type any of this yourself — it's all inside the one file you double-click.
+      </p>
+    </details>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">What's inside</div>
+  <div class="section-heading">One pill, six panels</div>
+  <div class="wrap">
+    <div class="chip-grid">
+      <div class="feat-chip">💬 Chat</div>
+      <div class="feat-chip">✅ Tasks</div>
+      <div class="feat-chip">🛠 Tools &amp; quick commands</div>
+      <div class="feat-chip">⚡ Rules &amp; hotkeys</div>
+      <div class="feat-chip">📋 Clipboard history</div>
+      <div class="feat-chip">🎵 Now playing</div>
+      <div class="feat-chip">🔍 Find any file by description</div>
+      <div class="feat-chip">🌐 Web research</div>
+      <div class="feat-chip">🔐 Sign in with Google — private per account</div>
+    </div>
+
+    <div class="toggle-card" style="margin-top:24px;">
+      <div style="flex:1;">
+        <b>🚀 Launch when your PC turns on</b>
+        <span>One toggle in Island's Settings — no separate startup app, no scheduled task to configure yourself.</span>
+      </div>
+      <div class="toggle-switch" id="startup-toggle" onclick="toggleStartupPreview()">
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+    <div class="toggle-hint">This lives inside Island itself once installed — this is just a preview of the switch.</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Plans</div>
+  <div class="section-heading">Free to run. Upgrade if you want more.</div>
+  <div class="wrap">
+    <div class="plans">
+      <div class="plan-card">
+        <div class="plan-tier">Free</div>
+        <div class="plan-price">₹0</div>
+        <div class="plan-desc">Everything above, capped message limit per day.</div>
+      </div>
+      <div class="plan-card pro">
+        <div class="plan-tier">Pro</div>
+        <div class="plan-price">₹100<span>/mo</span></div>
+        <div class="plan-desc">Higher daily limit, same tools.</div>
+      </div>
+      <div class="plan-card premium">
+        <div class="plan-tier">Premium</div>
+        <div class="plan-price">₹299<span>/mo</span></div>
+        <div class="plan-desc">Unlimited + best model available.</div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:20px;">Redeem a code straight from Island's <b style="color:var(--accent2)">Plan</b> tab — no separate account needed.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Read this</div>
+  <div class="section-heading">A few things not to do</div>
+  <div class="wrap">
+    <div class="donts">
+      <div class="dont-row">
+        <div class="dont-icon">🚫</div>
+        <div><b>Don't move files out of the folder</b><span>main.js, package.json and RUN_ISLAND.bat all need to stay together, in the same folder. Splitting them up is the #1 cause of "package.json not found" errors.</span></div>
+      </div>
+      <div class="dont-row">
+        <div class="dont-icon">🚫</div>
+        <div><b>Don't close the window during first setup</b><span>The very first run installs a couple of things automatically — closing it mid-way can leave things half-installed. Just let it finish once.</span></div>
+      </div>
+      <div class="dont-row">
+        <div class="dont-icon">🚫</div>
+        <div><b>Don't panic at the Windows SmartScreen warning</b><span>Windows flags any app that isn't paid-signed yet, even safe ones — that's not a virus warning, it's a "this developer hasn't paid Microsoft" warning. Click "More info" → "Run anyway."</span></div>
+      </div>
+      <div class="dont-row">
+        <div class="dont-icon">🚫</div>
+        <div><b>Don't hand-edit the JSON files while Island is running</b><span>island_data.json and similar files get read/written live — editing them by hand while the app's open can get overwritten or cause weird state.</span></div>
+      </div>
+      <div class="dont-row">
+        <div class="dont-icon">🚫</div>
+        <div><b>Don't share your admin link or JSONBin key</b><span>Whoever has that can edit pricing, codes and everyone's account data. Keep it to yourself only.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Support</div>
+  <div class="section-heading">🔥 🇮🇳 🔥 Support me and my work</div>
+  <div class="wrap">
+    <div class="support-grid">
+      <div class="hof-card">
+        <div class="hof-header"><b>🏆 HALL OF FAME 🏆</b></div>
+        <div class="hof-list" id="hof-list">Loading...</div>
+      </div>
+      <div>
+        <div class="qr-card">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALkAAAC5CAIAAAD7zwkLAAAEWUlEQVR4nO3dwY3DNhAF0GyQLlJF+i8iVaSOzV0H+hMzQ8rAe1fbktb+IGYpavjz+/v7BwT+vH0BfA1ZISUrpGSFlKyQkhVSskJKVkjJCqm/1i///fPPmev47/ffxXkfr66tP1v5i9aX0fhdNV5z5bwPxhVSskJKVkjJCqkPte3DVo25tq7XGovZxiNvvdpYra+PXLFVNRtXSMkKKVkhJSuk9mrbh63KqLEiW6uUnOs3r20Vs3Ol/VrlVzCukJIVUrJCSlZIlWrbObdWDlQq0EqNeWzVQYVxhZSskJIVUrJC6qW17VrjFPDWAoZHBVopSL+imH0wrpCSFVKyQkpWSJVq22PLDBrXrm7N6j7efOwythz7FYwrpGSFlKyQkhVSe7XtV8w2bi10nevA0Pjq+jKOMa6QkhVSskJKVkj9vHPvhrn1tsdOdOxZsmOMK6RkhZSskJIVUh9q23f2md3S2L6g8URrc61y1yfS35YeskJKVkjJCqm9edtj7aZuVaDrN6/NVetzCxi2/kDjCilZISUrpGSFVGlNQuMK0y2Nc5GN1fo79yVrnE02rpCSFVKyQkpWSJXmbW9tx9DYhfYlzXAbJ4jnfhTjCilZISUrpGSF1Ll9ySoa9wernHerv+2x/gxbzNtygqyQkhVSskJq8FmyimP9tLbOW3nz1mfnVkrYc5cTZIWUrJCSFVIf5m1f8jDV+sjHpo+3TnSsTF6z3pYLZIWUrJCSFVKlvRsqG9Y2LoM9VgmubRXg39gb17hCSlZIyQopWSH1Hf1t5yrBrRNtOVbMrulvywWyQkpWSMkKqa/sb7t+c0Vj64PKedduPZZmXCElK6RkhZSskPqwJqFS3N3aYWFuGvfYRg/v3JHXuEJKVkjJCilZIdX5LNncDf3KiY7N6t7aVPhhbuWycYWUrJCSFVKyQmpw3vbWAtvKVTU+pdb4KN2tMvnBuEJKVkjJCilZIXXuWbKHxg3B5i5j61DrIx/7NubWMxhXSMkKKVkhJSuk9p4le7h1u399GXN14kuOfGuvX+MKKVkhJSukZIVUqbZ9eMlt97mmCnPzxcfq0wrjCilZISUrpGSFVOd62/Vn5+7Rzy1vaNyOobEj2tarjV+7cYWUrJCSFVKyQqpz3rbRS6rXW8+DzbWsVdtygqyQkhVSskKqNG/baG7f3Mpn52ZmtyrfuZ0srLdlhKyQkhVSskLqQ237cKuD7bFWZJUac+7/gLlqfYtxhZSskJIVUrJCaq+2fTh2n73y5rkeYHPdtuYeeNMDjBNkhZSskJIVUqXadk5jZ4DGblvHrmpuq2O1LSfICilZISUrpF5a2z7MlY23ZpMrSwXmpsvXjCukZIWUrJCSFVKl2vZYZ9WHSn26dcu+sl/v2tzs6hzjCilZISUrpGSF1N6eu3NubU9wbJJ3bkeJtcZOwcYVUrJCSlZIyQqpl/a35YWMK6RkhZSskJIVUrJCSlZIyQopWSElK6T+B8G/8ePnZRkPAAAAAElFTkSuQmCC" width="140" height="140" alt="UPI QR"/>
+          <div style="font-weight:700;font-size:13px;">SCAN AND PAY UPI</div>
+          <div style="font-weight:700;font-size:15px;margin-top:2px;">9440425257@fam</div>
+          <div style="display:flex;justify-content:center;gap:6px;margin-top:8px;flex-wrap:wrap;">
+            <span style="font-size:10px;background:rgba(26,0,48,.08);padding:3px 8px;border-radius:20px;">PhonePe</span>
+            <span style="font-size:10px;background:rgba(26,0,48,.08);padding:3px 8px;border-radius:20px;">GPay</span>
+            <span style="font-size:10px;background:rgba(26,0,48,.08);padding:3px 8px;border-radius:20px;">Paytm</span>
+            <span style="font-size:10px;background:rgba(26,0,48,.08);padding:3px 8px;border-radius:20px;">BHIM</span>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--text2);margin-top:14px;text-align:center;">
+          Want Pro or Premium? Pay to <b style="color:var(--text)">9440425257@fam</b> and DM proof to
+          <a href="https://instagram.com/chatt.yx" target="_blank" style="color:var(--accent2)">@chatt.yx</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-name">G. BADRINATH</div>
+  <div class="footer-sub">HYDERABAD · INDIA · BUILT BY CHATTYCHOP</div>
+  <div class="footer-links">
+    <a href="https://youtube.com/@chattychop" target="_blank">CHATTY CHOP</a>
+    <a href="https://instagram.com/chatt.yx" target="_blank">@chatt.yx</a>
+    <a href="https://github.com/chattychop" target="_blank">GitHub</a>
+  </div>
+</div>
+
+<script>
+// Purely a visual preview of the real Settings toggle in Island itself
+// - this page has no way to touch a Windows startup entry, and
+// shouldn't pretend to. Just reflects on/off state back to the person.
+function toggleStartupPreview(){
+  const el = document.getElementById('startup-toggle');
+  el.classList.toggle('on');
+}
+
+// A webpage can't launch a desktop .exe out of nowhere - custom
+// protocols are the real, standard way this works (it's how "Open in
+// Zoom" or "Open in VS Code" links work too). Island registers itself
+// as the handler for chattyisland:// the first time it's run manually
+// (see main.js). Before that first run, nothing is registered, so the
+// browser just does nothing - that's the case the fallback message
+// below is for.
+function launchIsland(){
+  const fallback = document.getElementById('launch-fallback');
+  let leftPage = false;
+  function onBlur(){ leftPage = true; }
+  window.addEventListener('blur', onBlur);
+  window.location.href = 'chattyisland://start';
+  setTimeout(function(){
+    window.removeEventListener('blur', onBlur);
+    if(!leftPage){
+      fallback.style.display='block';
+      document.getElementById('get-it').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }, 1200);
+}
+
+// Same shared JSONBin the admin panel and Inbox already read/write -
+// donors live under the same "donors" field, so the Hall of Fame here
+// is the real, current list, not a static screenshot of one.
+const ISLAND_JBIN_URL = "https://api.jsonbin.io/v3/b/6a30dea2da38895dfec7bede";
+function iconFor(a){ return a>=500?'👑':a>=100?'🥈':'🥉'; }
+fetch(ISLAND_JBIN_URL + '/latest?meta=false')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    const list = document.getElementById('hof-list');
+    const donors = (d && d.donors) || [];
+    if(!donors.length){ list.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px 0;">Be the first to support 🔥</div>'; return; }
+    list.innerHTML = donors.slice().sort(function(a,b){return b.amount-a.amount;}).map(function(dnr){
+      return '<div class="hof-row"><span>'+iconFor(dnr.amount)+'</span><div><b>'+dnr.name+'</b><br><span style="color:var(--text2);font-size:11px;">'+dnr.city+' '+dnr.flag+' · Rs'+dnr.amount+'</span></div></div>';
+    }).join('');
+  })
+  .catch(function(){ document.getElementById('hof-list').innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;">Could not load right now</div>'; });
+
+// ── Try It Out — a real, clickable mock of the actual Island panel ──
+const DEMO_TABS = {
+  chat: { label: 'Chat', body: '<div style="color:var(--text2);">"hi"</div><div style="margin-top:8px;">Hey! What are we building today? 👋</div>' },
+  tasks: { label: 'Tasks', body: '☐ Ship the landing page<br>☑ <span style="text-decoration:line-through;opacity:.5;">Fix the bat file</span><br>☐ Tell everyone about Island' },
+  tools: { label: 'Tools', body: 'Lock PC · Mute · Empty bin · Screenshot · Organize Downloads<br><br>All one click away, no window to open.' },
+  plan: { label: 'Plan', body: '<span style="color:var(--blue);font-weight:700;">🔵 Pro plan</span><br>42 / unlimited asks today<br><br>Redeem a code any time.' },
+};
+let demoOpen = false;
+let demoTab = 'chat';
+function toggleDemo(){
+  demoOpen = !demoOpen;
+  renderDemo();
+}
+function switchDemoTab(tab, evt){
+  if(evt) evt.stopPropagation();
+  demoTab = tab;
+  renderDemo();
+}
+function renderDemo(){
+  const pill = document.getElementById('demo-pill');
+  if(!demoOpen){
+    pill.className = 'demo-pill collapsed';
+    pill.innerHTML = '<div class="demo-blob" style="width:11px;height:11px;"></div><span class="demo-text">All good</span>';
+    return;
+  }
+  pill.className = 'demo-pill open';
+  const tabsHtml = Object.keys(DEMO_TABS).map(function(key){
+    return '<div class="demo-tab'+(key===demoTab?' active':'')+'" onclick="switchDemoTab(\''+key+'\', event)">'+DEMO_TABS[key].label+'</div>';
+  }).join('');
+  pill.innerHTML =
+    '<div class="demo-top"><span class="demo-label">JARVIS</span><span style="font-size:11px;color:var(--text3);">tap pill to close</span></div>' +
+    '<div class="demo-tabs">'+tabsHtml+'</div>' +
+    '<div class="demo-body">'+DEMO_TABS[demoTab].body+'</div>';
+}
+</script>
+</body>
+</html>
